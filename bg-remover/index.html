@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Poppins:wght@300;400;600&display=swap');
+
+* {
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(-45deg, #000428, #004e92, #2c3e50, #0f2027);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    color: #fff;
+    overflow-x: hidden;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.container {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.4), 0 0 10px rgba(0,255,255,0.3);
+    padding: 30px 25px;
+    text-align: center;
+    width: 90%;
+    max-width: 600px;
+    backdrop-filter: blur(10px);
+    transition: all 0.4s ease;
+}
+
+.drop-area {
+    border: 2px dashed rgba(255,255,255,0.6);
+    border-radius: 15px;
+    padding: 40px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255,255,255,0.05);
+}
+
+.drop-area:hover {
+    background: rgba(0,255,255,0.1);
+    border-color: #00ffff;
+    box-shadow: 0 0 15px #00ffff;
+}
+
+.drop-area p {
+    color: #bdeaff;
+    letter-spacing: 1px;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.buttons {
+    margin-top: 20px;
+}
+
+button {
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 25px;
+    margin: 5px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 200, 255, 0.3);
+}
+
+button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 15px rgba(0, 200, 255, 0.6);
+}
+
+.preview-container {
+    display: flex;
+    gap: 20px;
+    margin-top: 25px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.preview-container img {
+    width: 250px;
+    border-radius: 10px;
+    display: none;
+    box-shadow: 0 0 15px rgba(0,255,255,0.4);
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 0;
+    overflow: hidden;
+    backdrop-filter: blur(5px);
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.slider-text {
+    display: inline-block;
+    white-space: nowrap;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 600;
+    letter-spacing: 2px;
+    font-size: 18px;
+    background: linear-gradient(90deg, #00ffff, #ff00ff, #ffea00, #00ffff);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: slideText 12s linear infinite, rainbow 5s linear infinite;
+    text-shadow: 0 0 6px #00ffff;
+}
+
+@keyframes slideText {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+@keyframes rainbow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="drop-area" id="dropArea">
+        <p>🌌 Drag & Drop your image here<br>or click to upload</p>
+        <input type="file" id="fileInput" accept="image/*">
+    </div>
+    <div class="buttons">
+        <button id="removeBgBtn">Remove Background</button>
+        <button id="downloadBtn" style="display:none;">Download</button>
+    </div>
+    <div class="preview-container">
+        <img id="originalImg" alt="Original Image">
+        <img id="outputImg" alt="Processed Image">
+    </div>
+</div>
+
+<footer>
+    <div class="slider-text">✨ If there is any fault in any tool please let us know ✨</div>
+</footer>
+
+<script>
+const dropArea = document.getElementById('dropArea');
+const fileInput = document.getElementById('fileInput');
+const removeBgBtn = document.getElementById('removeBgBtn');
+const outputImg = document.getElementById('outputImg');
+const originalImg = document.getElementById('originalImg');
+const downloadBtn = document.getElementById('downloadBtn');
+let uploadedFile;
+
+dropArea.addEventListener('click', () => fileInput.click());
+
+dropArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropArea.style.background = 'rgba(0,255,255,0.1)';
+    dropArea.style.borderColor = '#00ffff';
+});
+
+dropArea.addEventListener('dragleave', () => {
+    dropArea.style.background = 'rgba(255,255,255,0.05)';
+    dropArea.style.borderColor = 'rgba(255,255,255,0.6)';
+});
+
+dropArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropArea.style.background = 'rgba(255,255,255,0.05)';
+    uploadedFile = e.dataTransfer.files[0];
+    showOriginalImage();
+});
+
+fileInput.addEventListener('change', (e) => {
+    uploadedFile = e.target.files[0];
+    showOriginalImage();
+});
+
+function showOriginalImage() {
+    if (!uploadedFile) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        originalImg.src = e.target.result;
+        originalImg.style.display = 'block';
+    };
+    reader.readAsDataURL(uploadedFile);
+}
+
+removeBgBtn.addEventListener('click', async () => {
+    if (!uploadedFile) return alert('Please upload an image first.');
+
+    const formData = new FormData();
+    formData.append('image_file', uploadedFile);
+    formData.append('size', 'auto');
+
+    removeBgBtn.textContent = 'Removing...';
+    removeBgBtn.disabled = true;
+
+    try {
+        const res = await fetch('https://api.remove.bg/v1.0/removebg', {
+            method: 'POST',
+            headers: { 'X-Api-Key': 'gUck27eN5d8x9NPXaeZTxTjY' },
+            body: formData
+        });
+
+        if (!res.ok) throw new Error('Failed to remove background.');
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        outputImg.src = url;
+        outputImg.style.display = 'block';
+        downloadBtn.style.display = 'inline-block';
+        downloadBtn.onclick = () => {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'background_removed.png';
+            a.click();
+        };
+    } catch (err) {
+        alert(err.message);
+    }
+
+    removeBgBtn.textContent = 'Remove Background';
+    removeBgBtn.disabled = false;
+});
+</script>
+
+</body>
+</html>
